@@ -120,6 +120,16 @@ public class SecurityConfig {
                                 HttpMethod.PUT,
                                 "/api/orders/**"
                         ).hasRole("CUSTOMER")
+                        
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/prescriptions/**"
+                        ).hasRole("CUSTOMER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/prescriptions/**"
+                        ).hasRole("ADMIN")
 
                         .anyRequest()
                         .authenticated()
