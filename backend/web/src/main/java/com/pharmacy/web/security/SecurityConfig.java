@@ -70,6 +70,26 @@ public class SecurityConfig {
                                 HttpMethod.DELETE,
                                 "/api/categories/**"
                         ).hasRole("ADMIN")
+                        
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/medicines/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/medicines/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/medicines/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/medicines/**"
+                        ).hasRole("ADMIN")
 
                         .anyRequest()
                         .authenticated()
