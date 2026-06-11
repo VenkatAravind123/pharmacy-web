@@ -37,15 +37,20 @@ public class JwtService {
                 .getSubject();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token, String email) {
         try {
+            // 1. Verify the signature, expiration, and tampering
             Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token);
-            return true;
+            
+            // 2. Extract the username and check if it matches the provided email
+            String username = extractUsername(token);
+            return username.equals(email);
+
         } catch (JwtException | IllegalArgumentException ex) {
-            // It is safer to catch specific JWT exceptions rather than a generic Exception
+            // If the token is expired, malformed, or has an invalid signature, catch it here
             return false;
         }
     }
