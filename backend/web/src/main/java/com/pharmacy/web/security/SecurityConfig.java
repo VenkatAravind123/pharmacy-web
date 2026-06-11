@@ -105,6 +105,21 @@ public class SecurityConfig {
                                 HttpMethod.PUT,
                                 "/api/inventory/**"
                         ).hasRole("ADMIN")
+                        
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/orders/**"
+                        ).hasRole("CUSTOMER")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/orders/**"
+                        ).hasRole("CUSTOMER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/orders/**"
+                        ).hasRole("CUSTOMER")
 
                         .anyRequest()
                         .authenticated()
