@@ -90,6 +90,21 @@ public class SecurityConfig {
                                 HttpMethod.DELETE,
                                 "/api/medicines/**"
                         ).hasRole("ADMIN")
+                        
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/inventory/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/inventory/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/inventory/**"
+                        ).hasRole("ADMIN")
 
                         .anyRequest()
                         .authenticated()

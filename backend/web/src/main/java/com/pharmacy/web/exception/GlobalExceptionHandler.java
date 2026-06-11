@@ -47,4 +47,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+    
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<String> handleOutOfStock(
+            OutOfStockException ex) {
+
+        return ResponseEntity
+                .badRequest()
+                .body(ex.getMessage());
+    }
 }

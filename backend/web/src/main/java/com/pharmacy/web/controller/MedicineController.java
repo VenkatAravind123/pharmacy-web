@@ -63,5 +63,5 @@ public class MedicineController {
         return medicineService.updateMedicine(
                 id,
                 request);
-    }
+    } 
 }
