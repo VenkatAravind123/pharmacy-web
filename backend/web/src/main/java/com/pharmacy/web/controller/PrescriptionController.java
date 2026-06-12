@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;
+    private final com.pharmacy.web.Repository.PrescriptionRepository prescriptionRepository;
+    private final com.pharmacy.web.service.FileStorageService fileStorageService;
 
     @PostMapping("/upload")
     public PrescriptionResponse uploadPrescription(
@@ -42,5 +44,22 @@ public class PrescriptionController {
 
         return prescriptionService
                 .rejectPrescription(id);
+    }
+
+    @GetMapping("/{id}/download")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> downloadPrescription(@PathVariable Long id) throws Exception {
+        com.pharmacy.web.entity.Prescription p = prescriptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
+        org.springframework.core.io.Resource resource = fileStorageService.loadFileAsResource(p.getFilePath());
+        
+        String contentType = "application/octet-stream";
+        if(p.getFileName().toLowerCase().endsWith(".png")) contentType = "image/png";
+        else if(p.getFileName().toLowerCase().endsWith(".jpg") || p.getFileName().toLowerCase().endsWith(".jpeg")) contentType = "image/jpeg";
+        else if(p.getFileName().toLowerCase().endsWith(".pdf")) contentType = "application/pdf";
+
+        return org.springframework.http.ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + p.getFileName() + "\"")
+                .body(resource);
     }
 }

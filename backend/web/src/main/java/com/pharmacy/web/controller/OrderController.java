@@ -44,4 +44,16 @@ public class OrderController {
 
         return orderService.cancelOrder(orderId);
     }
+
+    @GetMapping
+    public List<OrderResponse> getAllOrders() {
+        return orderService.getAllOrders();
+    }
+
+    @PutMapping("/{orderId}/status")
+    public OrderResponse updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam String status) {
+        return orderService.updateOrderStatus(orderId, status);
+    }
 }

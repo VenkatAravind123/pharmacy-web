@@ -5,6 +5,7 @@ package com.pharmacy.web.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record OrderResponse(
 
@@ -14,6 +15,12 @@ public record OrderResponse(
 
         String status,
 
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        
+        List<OrderItemResponse> items,
+        
+        Long prescriptionId,
+        
+        String prescriptionFileName
 ) {
 }

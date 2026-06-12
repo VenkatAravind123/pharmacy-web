@@ -8,6 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.*;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
 @Service
 public class FileStorageService {
 
@@ -41,5 +44,15 @@ public class FileStorageService {
         );
 
         return filePath.toString();
+    }
+
+    public Resource loadFileAsResource(String fullFilePath) throws Exception {
+        Path filePath = Paths.get(fullFilePath).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        if (resource.exists()) {
+            return resource;
+        } else {
+            throw new Exception("File not found " + fullFilePath);
+        }
     }
 }

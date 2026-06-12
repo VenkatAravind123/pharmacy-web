@@ -1,6 +1,7 @@
 package com.pharmacy.web.service;
 
 import com.pharmacy.web.dto.OrderItemRequest;
+import com.pharmacy.web.dto.OrderItemResponse;
 import com.pharmacy.web.dto.OrderRequest;
 import com.pharmacy.web.dto.OrderResponse;
 import com.pharmacy.web.entity.*;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final MedicineRepository medicineRepository;
     private final InventoryService inventoryService;
+    private final PrescriptionRepository prescriptionRepository;
 
     public OrderResponse placeOrder(OrderRequest request) {
 
@@ -46,9 +49,10 @@ public class OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
+        Medicine medicine;
+        int count= 0;
         for (OrderItemRequest itemRequest : request.items()) {
-
-            Medicine medicine = medicineRepository
+            medicine = medicineRepository
                     .findById(itemRequest.medicineId())
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
@@ -83,10 +87,15 @@ public class OrderService {
             inventoryService.reduceStock(
                     medicine.getId(),
                     itemRequest.quantity());
+            if(medicine.getRequiresPrescription() == true){
+                count++;
+            }
         }
 
         order.setTotalAmount(totalAmount);
-
+        if(count > 0){
+            order.setStatus(OrderStatus.PENDING);
+        }
         order = orderRepository.save(order);
 
         return mapToResponse(order);
@@ -167,13 +176,59 @@ public class OrderService {
         return mapToResponse(order);
     }
 
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public OrderResponse updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        
+        try {
+            order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status provided");
+        }
+        
+        if (order.getStatus() == OrderStatus.REJECTED) {
+            // Restore inventory
+            List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+            for (OrderItem item : items) {
+                inventoryService.increaseStock(item.getMedicine().getId(), item.getQuantity());
+            }
+        }
+        
+        order = orderRepository.save(order);
+        return mapToResponse(order);
+    }
+
     private OrderResponse mapToResponse(Order order) {
+        List<OrderItemResponse> itemResponses = orderItemRepository.findByOrderId(order.getId())
+                .stream()
+                .map(item -> new OrderItemResponse(
+                        item.getMedicine().getId(),
+                        item.getMedicine().getName(),
+                        item.getQuantity(),
+                        item.getUnitPrice(),
+                        item.getSubTotal()
+                ))
+                .toList();
+                
+        Optional<Prescription> prescriptionOpt = prescriptionRepository.findByOrderId(order.getId());
+        Long prescriptionId = prescriptionOpt.map(Prescription::getId).orElse(null);
+        String prescriptionFileName = prescriptionOpt.map(Prescription::getFileName).orElse(null);
 
         return new OrderResponse(
                 order.getId(),
                 order.getTotalAmount(),
                 order.getStatus().name(),
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                itemResponses,
+                prescriptionId,
+                prescriptionFileName
         );
     }
 }
