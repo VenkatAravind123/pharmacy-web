@@ -50,7 +50,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingOrders = orders.filter(o => o.status === 'PENDING');
+  // const pendingOrders = orders.filter(o => o.status === 'PENDING');
+
+    // We now only want to show orders that have paid and need prescription review!
+  const pendingOrders = orders.filter(o => o.status === 'PRESCRIPTION_REVIEW' || o.status === 'PENDING');
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -62,7 +65,7 @@ export default function AdminDashboard() {
         return (
           <>
             <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircle size={20} /> Pending Orders
+              <CheckCircle size={20} /> Prescription Reviews
             </h3>
             {pendingOrders.length === 0 ? (
               <div className="glass" style={{ padding: '40px', textAlign: 'center' }}>
