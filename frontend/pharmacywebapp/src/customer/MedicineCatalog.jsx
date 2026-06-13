@@ -68,7 +68,7 @@ export default function MedicineCatalog() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <h3 style={{ margin: '0 0 8px 0' }}>{med.name}</h3>
-              <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>${med.price.toFixed(2)}</span>
+              <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>₹{med.price.toFixed(2)}</span>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9em', margin: '0 0 16px 0', flexGrow: 1 }}>{med.description}</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8em', color: 'var(--text-muted)', marginBottom: '16px' }}>

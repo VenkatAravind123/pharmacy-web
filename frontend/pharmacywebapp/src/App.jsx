@@ -10,6 +10,8 @@ import Checkout from './customer/Checkout';
 import MyOrders from './customer/MyOrders';
 import AdminDashboard from './admin/AdminDashboard';
 import './index.css';
+import Payment from './customer/Payment';
+
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<MyOrders />} />
+        <Route path="/payment" element={<Payment/>}/>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>

@@ -35,7 +35,7 @@ export function CartProvider({ children }) {
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const requiresPrescription = cart.some(item => item.requires_prescription);
+  const requiresPrescription = cart.some(item => item.requiresPrescription);
 
   return (
     <CartContext.Provider value={{ 

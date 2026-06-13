@@ -21,15 +21,15 @@ export default function Navbar() {
       </Link>
 
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-        <Link to="/catalog" className="nav-link">Browse Medicines</Link>
+        <Link to="/catalog" className="nav-link" style={{textDecoration:'none'}}>Browse Medicines</Link>
         
         {user ? (
           <>
             {user.role === 'ADMIN' && (
-              <Link to="/admin/dashboard" className="nav-link" style={{ color: '#facc15' }}>Admin Dashboard</Link>
+              <Link to="/admin/dashboard" className="nav-link" style={{ color: '#facc15',textDecoration:'none' }}>Admin Dashboard</Link>
             )}
-            <Link to="/orders" className="nav-link">My Orders</Link>
-            <Link to="/cart" style={{ position: 'relative', color: 'white' }}>
+            <Link to="/orders" className="nav-link" style={{textDecoration:'none'}}>My Orders</Link>
+            <Link to="/cart" style={{ position: 'relative', color: 'white',textDecoration:'none' }}>
               <ShoppingCart size={24} />
               {totalItems > 0 && (
                 <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--error)', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.7em', fontWeight: 'bold' }}>

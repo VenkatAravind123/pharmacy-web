@@ -39,7 +39,7 @@ public class OrderService {
                         new ResourceNotFoundException("User not found"));
         Order order = Order.builder()
                 .user(user)
-                .status(OrderStatus.APPROVED)
+                .status(OrderStatus.PENDING)
                 .paymentStatus(PaymentStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .totalAmount(BigDecimal.ZERO)
@@ -95,6 +95,9 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         if(count > 0){
             order.setStatus(OrderStatus.PENDING);
+        }
+        else{
+            order.setStatus(OrderStatus.APPROVED);
         }
         order = orderRepository.save(order);
 
