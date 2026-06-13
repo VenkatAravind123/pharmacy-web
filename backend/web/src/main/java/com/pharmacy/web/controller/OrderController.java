@@ -57,11 +57,8 @@ public class OrderController {
         return orderService.updateOrderStatus(orderId, status);
     }
     
-    @PostMapping("/{orderId}/complete-payment")
-    public OrderResponse completePayment(
-            @PathVariable Long orderId) {
-
-        return orderService
-                .completePayment(orderId);
+    @PutMapping("/{orderId}/payment")
+    public OrderResponse completePayment(@PathVariable Long orderId) {
+        return orderService.completePayment(orderId);
     }
 }

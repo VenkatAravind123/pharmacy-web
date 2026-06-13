@@ -31,76 +31,37 @@ public class OrderService {
     private final PrescriptionRepository prescriptionRepository;
 
     public OrderResponse placeOrder(OrderRequest request) {
-
         String email = SecurityUtils.getCurrentUserEmail();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         Order order = Order.builder()
                 .user(user)
-                .status(OrderStatus.PENDING)
+                .status(OrderStatus.PENDING) // Always starts as PENDING waiting for Payment!
                 .paymentStatus(PaymentStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .totalAmount(BigDecimal.ZERO)
                 .build();
 
         order = orderRepository.save(order);
-
         BigDecimal totalAmount = BigDecimal.ZERO;
-
         Medicine medicine;
-        int count= 0;
+
         for (OrderItemRequest itemRequest : request.items()) {
-            medicine = medicineRepository
-                    .findById(itemRequest.medicineId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException(
-                                    "Medicine not found with id : "
-                                            + itemRequest.medicineId()));
-
-            if (!inventoryService.hasEnoughStock(
-                    medicine.getId(),
-                    itemRequest.quantity())) {
-
-                throw new OutOfStockException(
-                        medicine.getName() + " is out of stock");
+            medicine = medicineRepository.findById(itemRequest.medicineId()).orElseThrow();
+            if (!inventoryService.hasEnoughStock(medicine.getId(), itemRequest.quantity())) {
+                throw new OutOfStockException(medicine.getName() + " is out of stock");
             }
 
-            BigDecimal subTotal = medicine.getPrice()
-                    .multiply(
-                            BigDecimal.valueOf(
-                                    itemRequest.quantity()));
-
+            BigDecimal subTotal = medicine.getPrice().multiply(BigDecimal.valueOf(itemRequest.quantity()));
             totalAmount = totalAmount.add(subTotal);
 
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .medicine(medicine)
-                    .quantity(itemRequest.quantity())
-                    .unitPrice(medicine.getPrice())
-                    .subTotal(subTotal)
-                    .build();
-
+            OrderItem orderItem = OrderItem.builder().order(order).medicine(medicine).quantity(itemRequest.quantity()).unitPrice(medicine.getPrice()).subTotal(subTotal).build();
             orderItemRepository.save(orderItem);
-
-            inventoryService.reduceStock(
-                    medicine.getId(),
-                    itemRequest.quantity());
-            if(medicine.getRequiresPrescription() == true){
-                count++;
-            }
+            inventoryService.reduceStock(medicine.getId(), itemRequest.quantity());
         }
 
         order.setTotalAmount(totalAmount);
-        if(count > 0){
-            order.setStatus(OrderStatus.PENDING);
-        }
-        else{
-            order.setStatus(OrderStatus.APPROVED);
-        }
         order = orderRepository.save(order);
-
         return mapToResponse(order);
     }
 
@@ -257,20 +218,21 @@ public class OrderService {
                 prescriptionFileName
         );
     }
-    public OrderResponse completePayment(
-            Long orderId) {
+    public OrderResponse completePayment(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        order.setPaymentStatus(PaymentStatus.SUCCESS);
 
-        Order order = orderRepository
-                .findById(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order not found"));
+        // Check if any medicine in this order requires a prescription
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+        boolean requiresPrescription = items.stream().anyMatch(item -> item.getMedicine().getRequiresPrescription());
 
-        order.setPaymentStatus(
-                PaymentStatus.SUCCESS);
+        if (requiresPrescription) {
+            order.setStatus(OrderStatus.PRESCRIPTION_REVIEW); // Send to pharmacist
+        } else {
+            order.setStatus(OrderStatus.APPROVED); // Bypass pharmacist
+        }
 
         order = orderRepository.save(order);
-
         return mapToResponse(order);
     }
 }
