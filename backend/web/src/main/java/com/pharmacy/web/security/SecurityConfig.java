@@ -153,9 +153,6 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
-
-                .httpBasic(withDefaults())
-
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
