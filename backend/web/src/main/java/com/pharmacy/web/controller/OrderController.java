@@ -56,4 +56,12 @@ public class OrderController {
             @RequestParam String status) {
         return orderService.updateOrderStatus(orderId, status);
     }
+    
+    @PostMapping("/{orderId}/complete-payment")
+    public OrderResponse completePayment(
+            @PathVariable Long orderId) {
+
+        return orderService
+                .completePayment(orderId);
+    }
 }

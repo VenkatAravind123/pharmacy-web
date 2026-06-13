@@ -37,10 +37,10 @@ public class OrderService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found"));
-
         Order order = Order.builder()
                 .user(user)
-                .status(OrderStatus.CONFIRMED)
+                .status(OrderStatus.APPROVED)
+                .paymentStatus(PaymentStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .totalAmount(BigDecimal.ZERO)
                 .build();
@@ -183,27 +183,49 @@ public class OrderService {
                 .toList();
     }
 
-    public OrderResponse updateOrderStatus(Long orderId, String status) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        
-        try {
-            order.setStatus(OrderStatus.valueOf(status.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status provided");
-        }
-        
-        if (order.getStatus() == OrderStatus.REJECTED) {
-            // Restore inventory
-            List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
-            for (OrderItem item : items) {
-                inventoryService.increaseStock(item.getMedicine().getId(), item.getQuantity());
-            }
-        }
-        
-        order = orderRepository.save(order);
-        return mapToResponse(order);
-    }
+    public OrderResponse updateOrderStatus(
+    		Long orderId,
+    		String status) {
+
+    	
+    		Order order = orderRepository.findById(orderId)
+    		        .orElseThrow(() ->
+    		                new ResourceNotFoundException(
+    		                        "Order not found"));
+
+    		OrderStatus newStatus;
+
+    		try {
+    		    newStatus = OrderStatus.valueOf(
+    		            status.toUpperCase());
+    		} catch (Exception ex) {
+    		    throw new RuntimeException(
+    		            "Invalid Order Status");
+    		}
+
+    		order.setStatus(newStatus);
+
+    		if (newStatus == OrderStatus.REJECTED
+    		        || newStatus == OrderStatus.CANCELLED) {
+
+    		    List<OrderItem> items =
+    		            orderItemRepository.findByOrderId(orderId);
+
+    		    for (OrderItem item : items) {
+
+    		        inventoryService.increaseStock(
+    		                item.getMedicine().getId(),
+    		                item.getQuantity());
+    		    }
+    		}
+
+    		order = orderRepository.save(order);
+
+    		return mapToResponse(order);
+    		
+
+    		}
+
 
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = orderItemRepository.findByOrderId(order.getId())
@@ -225,10 +247,27 @@ public class OrderService {
                 order.getId(),
                 order.getTotalAmount(),
                 order.getStatus().name(),
+                order.getPaymentStatus().name(),
                 order.getCreatedAt(),
                 itemResponses,
                 prescriptionId,
                 prescriptionFileName
         );
+    }
+    public OrderResponse completePayment(
+            Long orderId) {
+
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Order not found"));
+
+        order.setPaymentStatus(
+                PaymentStatus.SUCCESS);
+
+        order = orderRepository.save(order);
+
+        return mapToResponse(order);
     }
 }

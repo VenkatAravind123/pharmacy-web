@@ -15,12 +15,14 @@ public record OrderResponse(
 
         String status,
 
+        String paymentStatus,
+
         LocalDateTime createdAt,
-        
+
         List<OrderItemResponse> items,
-        
+
         Long prescriptionId,
-        
+
         String prescriptionFileName
 ) {
 }

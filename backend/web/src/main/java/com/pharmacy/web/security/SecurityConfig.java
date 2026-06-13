@@ -145,6 +145,10 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/prescriptions/**"
                         ).hasRole("ADMIN")
+                        
+                        .requestMatchers(
+                                "/api/admin/**"
+                        ).hasRole("ADMIN")
 
                         .anyRequest()
                         .authenticated()

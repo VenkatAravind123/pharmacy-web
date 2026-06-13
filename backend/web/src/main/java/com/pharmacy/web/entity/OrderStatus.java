@@ -1,15 +1,18 @@
 package com.pharmacy.web.entity;
 
 
+
 public enum OrderStatus {
 
     PENDING,
 
-    CONFIRMED,
-    
-    VALIDATED,
-    
-    REJECTED,
+    APPROVED,
 
-    CANCELLED
+    PACKED,
+
+    DELIVERED,
+
+    CANCELLED,
+    
+    REJECTED
 }

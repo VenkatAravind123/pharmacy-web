@@ -28,6 +28,9 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     private LocalDateTime createdAt;
 
@@ -36,4 +39,6 @@ public class Order {
             cascade = CascadeType.ALL
     )
     private List<OrderItem> orderItems;
+    
+ 
 }

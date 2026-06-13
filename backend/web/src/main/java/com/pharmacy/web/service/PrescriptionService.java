@@ -67,7 +67,7 @@ public class PrescriptionService {
                 prescription.getOrder();
 
         order.setStatus(
-                OrderStatus.CONFIRMED);
+                OrderStatus.APPROVED);
 
         prescription =
                 prescriptionRepository.save(
