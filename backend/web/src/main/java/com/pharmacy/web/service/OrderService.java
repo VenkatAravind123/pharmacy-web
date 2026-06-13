@@ -160,7 +160,7 @@ public class OrderService {
     		OrderStatus newStatus;
 
     		try {
-    		    newStatus = OrderStatus.valueOf(
+    		    newStatus = OrderStatus.valueOf (
     		            status.toUpperCase());
     		} catch (Exception ex) {
     		    throw new RuntimeException(
@@ -218,11 +218,25 @@ public class OrderService {
                 prescriptionFileName
         );
     }
-    public OrderResponse completePayment(Long orderId) {
+    public OrderResponse handlePayment(Long orderId, String paymentStatusStr) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        order.setPaymentStatus(PaymentStatus.SUCCESS);
 
-        // Check if any medicine in this order requires a prescription
+        // 1. IF THE TIMER RAN OUT (FAILED)
+        if ("FAILED".equals(paymentStatusStr)) {
+            order.setPaymentStatus(PaymentStatus.FAILED);
+            order.setStatus(OrderStatus.CANCELLED);
+
+            // Put the medicines back in the inventory since they didn't pay!
+            List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+            for (OrderItem item : items) {
+                inventoryService.increaseStock(item.getMedicine().getId(), item.getQuantity());
+            }
+            order = orderRepository.save(order);
+            return mapToResponse(order);
+        }
+
+        // 2. IF THEY CLICKED "I HAVE COMPLETED PAYMENT" (SUCCESS)
+        order.setPaymentStatus(PaymentStatus.SUCCESS);
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
         boolean requiresPrescription = items.stream().anyMatch(item -> item.getMedicine().getRequiresPrescription());
 

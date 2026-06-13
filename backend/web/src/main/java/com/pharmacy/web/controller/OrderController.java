@@ -56,9 +56,12 @@ public class OrderController {
             @RequestParam String status) {
         return orderService.updateOrderStatus(orderId, status);
     }
-    
     @PutMapping("/{orderId}/payment")
-    public OrderResponse completePayment(@PathVariable Long orderId) {
-        return orderService.completePayment(orderId);
+    public OrderResponse handlePayment(
+            @PathVariable Long orderId,
+            @RequestBody java.util.Map<String, String> payload) {
+
+        // This grabs the { status: 'FAILED' } or { status: 'COMPLETED' } from the React frontend!
+        return orderService.handlePayment(orderId, payload.get("status"));
     }
 }
