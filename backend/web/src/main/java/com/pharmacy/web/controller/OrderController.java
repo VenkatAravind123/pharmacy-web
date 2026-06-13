@@ -6,6 +6,8 @@ import com.pharmacy.web.dto.OrderResponse;
 import com.pharmacy.web.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,4 +66,17 @@ public class OrderController {
         // This grabs the { status: 'FAILED' } or { status: 'COMPLETED' } from the React frontend!
         return orderService.handlePayment(orderId, payload.get("status"));
     }
+    
+    @PutMapping("/{id}/pack")
+    public ResponseEntity<OrderResponse> packOrder(@PathVariable Long id) {
+        OrderResponse response = orderService.packOrder(id);
+        return ResponseEntity.ok(response);
+    }
+
+    // 2. Endpoint to mark a PACKED order as DELIVERED
+    @PutMapping("/{id}/deliver")
+    public ResponseEntity<OrderResponse> deliverOrder(@PathVariable Long id) {
+        OrderResponse response = orderService.deliverOrder(id);
+        return ResponseEntity.ok(response);
+}
 }

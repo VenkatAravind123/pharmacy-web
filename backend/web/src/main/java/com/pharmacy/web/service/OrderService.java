@@ -249,4 +249,33 @@ public class OrderService {
         order = orderRepository.save(order);
         return mapToResponse(order);
     }
+    
+    public OrderResponse packOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // Guard Clause: Only APPROVED orders can be packed
+        if (order.getStatus() != OrderStatus.APPROVED) {
+            throw new IllegalStateException("Order must be APPROVED before it can be packed. Current status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.PACKED);
+        order = orderRepository.save(order);
+        return mapToResponse(order);
+    }
+
+    public OrderResponse deliverOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // Guard Clause: Only PACKED orders can be marked as delivered
+        if (order.getStatus() != OrderStatus.PACKED) {
+            throw new IllegalStateException("Order must be PACKED before it can be delivered. Current status: " + order.getStatus());
+        }
+
+        // Since it's delivered, ensure payment is settled (if it wasn't already COD/Online)
+        order.setStatus(OrderStatus.DELIVERED);
+        order = orderRepository.save(order);
+        return mapToResponse(order);
+    }
 }
